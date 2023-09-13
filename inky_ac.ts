@@ -54,9 +54,9 @@ const AC073TC1_CCSET = 0xE0;
 const AC073TC1_PWS = 0xE3;
 const AC073TC1_TSSET = 0xE6;
 
-const _SPI_CHUNK_SIZE = 4096;
-const _SPI_COMMAND = 0;
-const _SPI_DATA = 1;
+const SPI_CHUNK_SIZE = 4096;
+const SPI_COMMAND = 0;
+const SPI_DATA = 1;
 type Colour = [number, number, number]
 type Palette = Array<Colour>
 
@@ -80,8 +80,8 @@ export class Inky {
     cs_channel: any;
     h_flip: boolean;
     v_flip: boolean;
-    _gpio_setup: boolean;
-    _luts: null;
+    gpio_setup: boolean;
+    luts: null;
     /* Inky e-Ink Display Driver. */;
     BLACK = 0;
     WHITE = 1;
@@ -150,18 +150,11 @@ export class Inky {
         this.reset_pin = reset_pin;
         this.busy_pin = busy_pin;
         this.cs_pin = cs_pin;
-        // try {
-        //     //!this.cs_channel = [8, 7].index(cs_pin);
-        // } catch (ValueError) {
-        //     this.cs_channel = 0;
-        //     this.h_flip = h_flip;
-        //     this.v_flip = v_flip;
-        // }
         this.h_flip = h_flip;
         this.v_flip = v_flip;
-        this._gpio_setup = false;
+        this.gpio_setup = false;
 
-        this._luts = null;
+        this.luts = null;
     }
     log_buffer() {
         for (let y = 0; y < this.height; y++) {
@@ -173,7 +166,7 @@ export class Inky {
             console.log(...line)
         }
     }
-    private _palette_blend(saturation: number, dtype = 'uint8') {
+    private palette_blend(saturation: number, dtype = 'uint8') {
         let palette: Palette = [];
         for (let i = 0; i < 7; i++) {
             let [rs, gs, bs] = this.SATURATED_PALETTE[i].map(col => {
@@ -187,8 +180,8 @@ export class Inky {
         }
 
         // if (dtype == 'uint8') {
-            // palette.push([255, 255, 255]);
-            return palette
+        // palette.push([255, 255, 255]);
+        return palette
         // } else if (dtype == 'uint24') {
         //     palette.push([0xffffff]);
         //     return palette as number[];
@@ -197,7 +190,7 @@ export class Inky {
     }
     async setup() {
         /* Set up Inky GPIO and reset display. */
-        if (!this._gpio_setup) {
+        if (!this.gpio_setup) {
             rpio.init({
                 mapping: "gpio",
                 gpiomem: false
@@ -211,7 +204,7 @@ export class Inky {
             rpio.open(this.reset_pin, rpio.OUTPUT, rpio.PULL_OFF)
             rpio.open(this.busy_pin, rpio.INPUT, rpio.PULL_OFF)
 
-            this._gpio_setup = true;
+            this.gpio_setup = true;
         }
 
 
@@ -225,48 +218,48 @@ export class Inky {
         rpio.write(this.reset_pin, rpio.HIGH)
 
 
-        await this._busy_wait(1.0);
+        await this.busy_wait(1.0);
 
         // Sending init commands to display
-        this._send_command(AC073TC1_CMDH, [0x49, 0x55, 0x20, 0x08, 0x09, 0x18]);
+        this.send_command(AC073TC1_CMDH, [0x49, 0x55, 0x20, 0x08, 0x09, 0x18]);
 
-        this._send_command(AC073TC1_PWR, [0x3F, 0x00, 0x32, 0x2A, 0x0E, 0x2A]);
+        this.send_command(AC073TC1_PWR, [0x3F, 0x00, 0x32, 0x2A, 0x0E, 0x2A]);
 
-        this._send_command(AC073TC1_PSR, [0x5F, 0x69]);
+        this.send_command(AC073TC1_PSR, [0x5F, 0x69]);
 
-        this._send_command(AC073TC1_POFS, [0x00, 0x54, 0x00, 0x44]);
+        this.send_command(AC073TC1_POFS, [0x00, 0x54, 0x00, 0x44]);
 
-        this._send_command(AC073TC1_BTST1, [0x40, 0x1F, 0x1F, 0x2C]);
+        this.send_command(AC073TC1_BTST1, [0x40, 0x1F, 0x1F, 0x2C]);
 
-        this._send_command(AC073TC1_BTST2, [0x6F, 0x1F, 0x16, 0x25]);
+        this.send_command(AC073TC1_BTST2, [0x6F, 0x1F, 0x16, 0x25]);
 
-        this._send_command(AC073TC1_BTST3, [0x6F, 0x1F, 0x1F, 0x22]);
+        this.send_command(AC073TC1_BTST3, [0x6F, 0x1F, 0x1F, 0x22]);
 
-        this._send_command(AC073TC1_IPC, [0x00, 0x04]);
+        this.send_command(AC073TC1_IPC, [0x00, 0x04]);
 
-        this._send_command(AC073TC1_PLL, [0x02]);
+        this.send_command(AC073TC1_PLL, [0x02]);
 
-        this._send_command(AC073TC1_TSE, [0x00]);
+        this.send_command(AC073TC1_TSE, [0x00]);
 
-        this._send_command(AC073TC1_CDI, [0x3F]);
+        this.send_command(AC073TC1_CDI, [0x3F]);
 
-        this._send_command(AC073TC1_TCON, [0x02, 0x00]);
+        this.send_command(AC073TC1_TCON, [0x02, 0x00]);
 
-        this._send_command(AC073TC1_TRES, [0x03, 0x20, 0x01, 0xE0]);
+        this.send_command(AC073TC1_TRES, [0x03, 0x20, 0x01, 0xE0]);
 
-        this._send_command(AC073TC1_VDCS, [0x1E]);
+        this.send_command(AC073TC1_VDCS, [0x1E]);
 
-        this._send_command(AC073TC1_T_VDCS, [0x00]);
+        this.send_command(AC073TC1_T_VDCS, [0x00]);
 
-        this._send_command(AC073TC1_AGID, [0x00]);
+        this.send_command(AC073TC1_AGID, [0x00]);
 
-        this._send_command(AC073TC1_PWS, [0x2F]);
+        this.send_command(AC073TC1_PWS, [0x2F]);
 
-        this._send_command(AC073TC1_CCSET, [0x00]);
+        this.send_command(AC073TC1_CCSET, [0x00]);
 
-        this._send_command(AC073TC1_TSSET, [0x00]);
+        this.send_command(AC073TC1_TSSET, [0x00]);
     }
-    private async _busy_wait(timeout_seconds = 40.0) {
+    private async busy_wait(timeout_seconds = 40.0) {
         let timeout = timeout_seconds * 1000
         /* Wait for busy/wait pin. */
         // If the busy_pin is *high* (pulled up by host)
@@ -289,7 +282,7 @@ export class Inky {
             // console.log("Busy_waited", Date.now() -t_start, "out of", timeout, "milliseconds")
         }
     }
-    private async _update(buf: number[]) {
+    private async update(buf: number[]) {
         /* Update display.
 
         Dispatches display update to correct driver.
@@ -301,16 +294,16 @@ export class Inky {
 
         await this.setup();
 
-        this._send_command(AC073TC1_DTM, buf); // data transfer
+        this.send_command(AC073TC1_DTM, buf); // data transfer
 
-        this._send_command(AC073TC1_PON); // power on
-        await this._busy_wait(0.4);
+        this.send_command(AC073TC1_PON); // power on
+        await this.busy_wait(0.4);
 
-        this._send_command(AC073TC1_DRF, [0x00]); // data refresh
-        await this._busy_wait(45.0)  // 41 seconds in testing
+        this.send_command(AC073TC1_DRF, [0x00]); // data refresh
+        await this.busy_wait(45.0)  // 41 seconds in testing
 
-        this._send_command(AC073TC1_POF, [0x00]); // power off
-        await this._busy_wait(0.4);
+        this.send_command(AC073TC1_POF, [0x00]); // power off
+        await this.busy_wait(0.4);
     }
     set_pixel(x: number, y: number, colour_index: number) {
         /* Set a single pixel.
@@ -354,7 +347,7 @@ export class Inky {
             let res = ((even << 4) & 0xF0) | (odd & 0x0F);
             output.push(res)
         }
-        await this._update(output);
+        await this.update(output);
     }
     set_border(colour: number) {
         /* Set the border colour. */
@@ -378,7 +371,7 @@ export class Inky {
     private group_array(array: Array<any>, n: number) {
         return [...Array(Math.ceil(array.length / n))].map((el, i) => array.slice(i * n, (i + 1) * n));
     }
-    private _spi_write(dc: number, values: number[]) {
+    private spi_write(dc: number, values: number[]) {
         /* Write values over SPI.
      
         :param dc: whether to write as data or command
@@ -395,7 +388,7 @@ export class Inky {
         })
         rpio.write(this.cs_pin, 1);
     }
-    private _send_command(command: any, data: number | number[] | null = null) {
+    private send_command(command: any, data: number | number[] | null = null) {
 
         /* Send command over SPI.
      
@@ -403,22 +396,22 @@ export class Inky {
         :param data: optional list oseff values
      
          */
-        this._spi_write(_SPI_COMMAND, [command]);
+        this.spi_write(SPI_COMMAND, [command]);
         if (data !== null) {
-            this._send_data(data);
+            this.send_data(data);
         }
     }
-    private _send_data(data: number | number[]) {
+    private send_data(data: number | number[]) {
         /* Send data over SPI.
  
         :param data: list of values
  
          */
         if (typeof data == "number") data = [data];
-        this._spi_write(_SPI_DATA, data);
+        this.spi_write(SPI_DATA, data);
 
     }
-    private getSmallestInArray(a:number[]) {
+    private getSmallestInArray(a: number[]) {
         var lowest = 0;
         for (var i = 1; i < a.length; i++) {
             if (a[i] < a[lowest]) lowest = i;
@@ -426,7 +419,7 @@ export class Inky {
         return lowest;
 
     }
-    private getClosestColour(pixel:Colour, palette:Palette) {
+    private getClosestColour(pixel: Colour, palette: Palette) {
         // based on https://github.com/ccpalettes/gd-indexed-color-converter/blob/master/src/GDIndexedColourConverter.php
         let distances = palette.map((colour) => {
             return this.calculateEuclideanDistanceSquare(pixel, colour)
@@ -438,21 +431,21 @@ export class Inky {
         let dist = ((q[0] - p[0]) ** 2) + ((q[1] - p[1]) ** 2) + ((q[2] - p[2]) ** 2);
         return dist
     }
-    public convertToIndexedColour(image: number[][][], saturation:number = 0.5, dithering:number = 0.75) {
-        let palette = this._palette_blend(saturation)
+    public convertToIndexedColour(image: number[][][], saturation: number = 0.5, dithering: number = 0.75) {
+        let palette = this.palette_blend(saturation)
         // let newPalette = palette?.map((colour) => {
         //     return { "rgb": colour, "lab": this.RGBtoLab(colour) }
         // })
         console.log("converting complete, starting dithering")
         this.floydSteinbergDither(image, this.width, this.height, palette, dithering);
     }
-    private RGBtoLab(rgb:Colour) {
+    private RGBtoLab(rgb: Colour) {
         return this.XYZtoCIELab(this.RGBtoXYZ(rgb));
     }
-    private RGBtoPalette(rgb:Colour, palette:Palette) {
+    private RGBtoPalette(rgb: Colour, palette: Palette) {
         return palette.findIndex((ele) => ele === rgb)
     }
-    private RGBtoXYZ(rgb:Colour) {
+    private RGBtoXYZ(rgb: Colour) {
         let r = rgb[0] / 255;
         let g = rgb[1] / 255;
         let b = rgb[2] / 255;
@@ -485,7 +478,7 @@ export class Inky {
             r * 0.0193 + g * 0.1192 + b * 0.9505
         ] as Colour
     }
-    private XYZtoCIELab(xyz:Colour) {
+    private XYZtoCIELab(xyz: Colour) {
         let refX = 95.047;
         let refY = 100;
         let refZ = 108.883;
@@ -517,7 +510,7 @@ export class Inky {
             500 * (x - y),
             200 * (y - z),] as Colour
     }
-    private floydSteinbergDither(image: number[][][], width:number, height:number, palette:Palette, amount:number) {
+    private floydSteinbergDither(image: number[][][], width: number, height: number, palette: Palette, amount: number) {
         console.log(width, height)
         let nextRowColourStorage: number[][] = []
 
@@ -525,7 +518,7 @@ export class Inky {
             let currentRowColourStorage = nextRowColourStorage
 
             for (let j = 0; j < width; j++) {
-                let colour:Colour
+                let colour: Colour
                 if (i === 0 && j === 0) {
                     colour = image[i][j] as Colour
                 } else {
@@ -562,7 +555,7 @@ export class Inky {
                         }
                     }
                 })
-                let i_colour:number = this.RGBtoPalette(closestColour, palette)
+                let i_colour: number = this.RGBtoPalette(closestColour, palette)
                 // console.log(j, i, colour,closestColour, i_colour)
                 this.set_pixel(j, i, i_colour)
             }

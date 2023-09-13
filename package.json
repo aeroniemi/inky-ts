@@ -1,0 +1,21 @@
+{
+  "name": "inky",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/pngjs": "^6.0.1",
+    "@types/rpio": "^2.4.3",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "pngjs": "^7.0.0",
+    "rpio": "^2.4.2"
+  }
+}

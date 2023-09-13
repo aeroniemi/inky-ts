@@ -1,7 +1,5 @@
-var rpio = require("rpio")
-var PNG = require("pngjs").PNG;
-import { readFileSync } from 'fs'
-import chalk from 'chalk';
+import rpio from "rpio"
+import { Inky } from "./inky"
 const BLACK = 0;
 const WHITE = 1;
 const GREEN = 2;
@@ -60,19 +58,7 @@ const SPI_DATA = 1;
 type Colour = [number, number, number]
 type Palette = Array<Colour>
 
-export class Inky {
-    width: number;
-    height: number;
-    border_colour: number;
-    cols: any;
-    rows: any;
-    rotation: any;
-    offset_x: any;
-    offset_y: any;
-    resolution_setting: any;
-    colour: string;
-    lut: string;
-    buf: number[][];
+export class Inky_ac extends Inky {
     dc_pin: number;
     reset_pin: number;
     busy_pin: number;
@@ -81,19 +67,6 @@ export class Inky {
     h_flip: boolean;
     v_flip: boolean;
     gpio_setup: boolean;
-    luts: null;
-    /* Inky e-Ink Display Driver. */;
-    BLACK = 0;
-    WHITE = 1;
-    GREEN = 2;
-    BLUE = 3;
-    RED = 4;
-    YELLOW = 5;
-    ORANGE = 6;
-    CLEAN = 7;
-
-    WIDTH = 800;
-    HEIGHT = 480;
 
     DESATURATED_PALETTE: Palette = [
         [0, 0, 0],        // Black
@@ -117,35 +90,11 @@ export class Inky {
         [255, 255, 255]   // Clear
     ];
 
-    constructor(width: number, height: number, colour = 'multi', cs_pin = CS0_PIN, dc_pin = DC_PIN, reset_pin = RESET_PIN, busy_pin = BUSY_PIN, h_flip = false, v_flip = true, spi_bus = null, i2c_bus = null, gpio = null) {  // noqa: E501
-        /* Initialise an Inky Display.
-    
-        :param resolution: (width, height) in pixels, default: (600, 448)
-        :param colour: one of red, black or yellow, default: black
-        :param cs_pin: chip-select pin for SPI communication
-        :param dc_pin: data/command pin for SPI communication
-        :param reset_pin: device reset pin
-        :param busy_pin: device busy/wait pin
-        :param h_flip: enable horizontal display flip, default: False
-        :param v_flip: enable vertical display flip, default: False
-    
-         */
-
-        // Check for supported display variant and select the correct resolution
-        // Eg: 600x480 and 640x400
-        this.width = width
-        this.height = height
-        this.border_colour = WHITE;
-        this.cols = this.width
-        this.rows = this.height
-
+    constructor(width: number, height: number, colour = 'multi', cs_pin = CS0_PIN, dc_pin = DC_PIN, reset_pin = RESET_PIN, busy_pin = BUSY_PIN, h_flip = false, v_flip = true) {  // noqa: E501
+        super(width, height, colour)
         if (!['multi'].includes(colour)) {
             throw new Error(`Colour ${colour} is not supported!`);
         }
-        this.colour = colour;
-        this.lut = colour;
-
-        this.buf = Array(this.rows).fill(0).map(() => Array(this.cols).fill(BLUE));
         this.dc_pin = dc_pin;
         this.reset_pin = reset_pin;
         this.busy_pin = busy_pin;
@@ -153,20 +102,11 @@ export class Inky {
         this.h_flip = h_flip;
         this.v_flip = v_flip;
         this.gpio_setup = false;
-
-        this.luts = null;
     }
-    log_buffer() {
-        for (let y = 0; y < this.height; y++) {
-            let line: string[] = []
-            for (let x = 0; x < this.width; x++) {
-                let colour = this.SATURATED_PALETTE[this.buf[y][x]]
-                line.push(chalk.rgb(...colour).bold("■"))
-            }
-            console.log(...line)
-        }
+    public getPalette(saturation: number) {
+        return this.palette_blend(saturation)
     }
-    private palette_blend(saturation: number, dtype = 'uint8') {
+    private palette_blend(saturation: number) {
         let palette: Palette = [];
         for (let i = 0; i < 7; i++) {
             let [rs, gs, bs] = this.SATURATED_PALETTE[i].map(col => {
@@ -175,17 +115,9 @@ export class Inky {
             let [rd, gd, bd] = this.DESATURATED_PALETTE[i].map(col => {
                 return col * (1 - saturation) as number
             })
-            if (dtype == 'uint8') palette.push([Math.round(rs + rd), Math.round(gs + gd), Math.round(bs + bd)])
-            // if (dtype == 'uint24') palette.push([(Math.round(rs + rd) << 16) | (Math.round(gs + gd) << 8) | Math.round(bs + bd)]);
+            palette.push([Math.round(rs + rd), Math.round(gs + gd), Math.round(bs + bd)])
         }
-
-        // if (dtype == 'uint8') {
-        // palette.push([255, 255, 255]);
         return palette
-        // } else if (dtype == 'uint24') {
-        //     palette.push([0xffffff]);
-        //     return palette as number[];
-        // }
 
     }
     async setup() {
@@ -355,22 +287,6 @@ export class Inky {
             this.border_colour = colour;
         }
     }
-    display_png(path: string, saturation = 0.9, dithering = 0.75) {
-        var data = readFileSync(path);
-        var image = PNG.sync.read(data);
-        let imageArray = this.group_array(this.group_array([...image.data], 4), this.width)
-        this.convertToIndexedColour(imageArray, saturation, dithering)
-
-    }
-    display_mem_png(data: any, saturation = 0.9, dithering = 0.75) {
-        var image = PNG.sync.read(data);
-        let imageArray = this.group_array(this.group_array([...image.data], 4), this.width)
-        this.convertToIndexedColour(imageArray, saturation, dithering)
-
-    }
-    private group_array(array: Array<any>, n: number) {
-        return [...Array(Math.ceil(array.length / n))].map((el, i) => array.slice(i * n, (i + 1) * n));
-    }
     private spi_write(dc: number, values: number[]) {
         /* Write values over SPI.
      
@@ -410,156 +326,6 @@ export class Inky {
         if (typeof data == "number") data = [data];
         this.spi_write(SPI_DATA, data);
 
-    }
-    private getSmallestInArray(a: number[]) {
-        var lowest = 0;
-        for (var i = 1; i < a.length; i++) {
-            if (a[i] < a[lowest]) lowest = i;
-        }
-        return lowest;
-
-    }
-    private getClosestColour(pixel: Colour, palette: Palette) {
-        // based on https://github.com/ccpalettes/gd-indexed-color-converter/blob/master/src/GDIndexedColourConverter.php
-        let distances = palette.map((colour) => {
-            return this.calculateEuclideanDistanceSquare(pixel, colour)
-        })
-        let minIndex = this.getSmallestInArray(distances)
-        return palette[minIndex] as Colour
-    }
-    private calculateEuclideanDistanceSquare(q: [number, number, number], p: [number, number, number]) {
-        let dist = ((q[0] - p[0]) ** 2) + ((q[1] - p[1]) ** 2) + ((q[2] - p[2]) ** 2);
-        return dist
-    }
-    public convertToIndexedColour(image: number[][][], saturation: number = 0.5, dithering: number = 0.75) {
-        let palette = this.palette_blend(saturation)
-        // let newPalette = palette?.map((colour) => {
-        //     return { "rgb": colour, "lab": this.RGBtoLab(colour) }
-        // })
-        console.log("converting complete, starting dithering")
-        this.floydSteinbergDither(image, this.width, this.height, palette, dithering);
-    }
-    private RGBtoLab(rgb: Colour) {
-        return this.XYZtoCIELab(this.RGBtoXYZ(rgb));
-    }
-    private RGBtoPalette(rgb: Colour, palette: Palette) {
-        return palette.findIndex((ele) => ele === rgb)
-    }
-    private RGBtoXYZ(rgb: Colour) {
-        let r = rgb[0] / 255;
-        let g = rgb[1] / 255;
-        let b = rgb[2] / 255;
-
-        if (r > 0.04045) {
-            r = (((r + 0.055) / 1.055) ** 2.4);
-        } else {
-            r = r / 12.92;
-        }
-
-        if (g > 0.04045) {
-            g = (((g + 0.055) / 1.055) ** 2.4);
-        } else {
-            g = g / 12.92;
-        }
-
-        if (b > 0.04045) {
-            b = (((b + 0.055) / 1.055) ** 2.4);
-        } else {
-            b = b / 12.92;
-        }
-
-        r *= 100;
-        g *= 100;
-        b *= 100;
-
-        return [
-            r * 0.4124 + g * 0.3576 + b * 0.1805,
-            r * 0.2126 + g * 0.7152 + b * 0.0722,
-            r * 0.0193 + g * 0.1192 + b * 0.9505
-        ] as Colour
-    }
-    private XYZtoCIELab(xyz: Colour) {
-        let refX = 95.047;
-        let refY = 100;
-        let refZ = 108.883;
-
-        let x = xyz[0] / refX;
-        let y = xyz[1] / refY;
-        let z = xyz[2] / refZ;
-
-        if (x > 0.008856) {
-            x **= (1 / 3);
-        } else {
-            x = (7.787 * x) + (16 / 116);
-        }
-
-        if (y > 0.008856) {
-            y **= (1 / 3);
-        } else {
-            y = (7.787 * y) + (16 / 116);
-        }
-
-        if (z > 0.008856) {
-            z **= (1 / 3);
-        } else {
-            z = (7.787 * z) + (16 / 116);
-        }
-
-        return [
-            (116 * y) - 16,
-            500 * (x - y),
-            200 * (y - z),] as Colour
-    }
-    private floydSteinbergDither(image: number[][][], width: number, height: number, palette: Palette, amount: number) {
-        console.log(width, height)
-        let nextRowColourStorage: number[][] = []
-
-        for (let i = 0; i < height; i++) {
-            let currentRowColourStorage = nextRowColourStorage
-
-            for (let j = 0; j < width; j++) {
-                let colour: Colour
-                if (i === 0 && j === 0) {
-                    colour = image[i][j] as Colour
-                } else {
-                    colour = currentRowColourStorage[j] as Colour;
-                }
-                let closestColour: Colour = this.getClosestColour(colour, palette);
-
-                if (j < width - 1) {
-                    if (i === 0) {
-                        currentRowColourStorage[j + 1] = image[i][j + 1]
-                    }
-                }
-                if (i < height - 1) {
-                    if (j === 0) {
-                        nextRowColourStorage[j] = image[i + 1][j]
-                    }
-                    if (j < width - 1) {
-                        nextRowColourStorage[j + 1] = image[i + 1][j + 1]
-                    }
-                }
-
-                closestColour.forEach((channel, key) => {
-                    let quantError = colour[key] - closestColour[key];
-                    if (j < width - 1) {
-                        currentRowColourStorage[j + 1][key] += quantError * 7 / 16 * amount;
-                    }
-                    if (i < height - 1) {
-                        if (j > 0) {
-                            nextRowColourStorage[j - 1][key] += quantError * 3 / 16 * amount;
-                        }
-                        nextRowColourStorage[j][key] += quantError * 5 / 16 * amount;
-                        if (j < width - 1) {
-                            nextRowColourStorage[j + 1][key] += quantError * 1 / 16 * amount;
-                        }
-                    }
-                })
-                let i_colour: number = this.RGBtoPalette(closestColour, palette)
-                // console.log(j, i, colour,closestColour, i_colour)
-                this.set_pixel(j, i, i_colour)
-            }
-        }
     }
 
 }

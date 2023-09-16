@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { readFileSync, writeFileSync } from "fs";
 import { PNG } from "pngjs";
 import type { JSX } from "react";
-import satori, { SatoriOptions } from "satori";
+import satori, {FontOptions, SatoriOptions} from "satori";
 
 // types
 export type Colour = [number, number, number]
@@ -149,25 +149,17 @@ export class Inky {
             }
         }
     }
-    async set_jsx(content: JSX.Element) {
-        let svg = await this.jsx_to_svg(content)
+    async set_jsx(content: JSX.Element, fonts:SatoriOptions["fonts"]) {
+        let svg = await this.jsx_to_svg(content, fonts)
         let render = this.svg_to_rendered(svg)
         let buffer = this.rendered_to_buffered_image(render)
         this.display_buffered_image(buffer)
     }
-    private async jsx_to_svg(content: JSX.Element) {
+    private async jsx_to_svg(content: JSX.Element, fonts: SatoriOptions["fonts"]) {
         return satori(content, {
             width: this.width,
             height: this.height,
-            fonts: [
-                {
-                    name: 'SourceSans3',
-                    data: readFileSync("./src/fonts/SourceSans3-SemiBold.ttf"),
-                    weight: 600,
-                    style: "normal",
-                },
-            ],
-
+            fonts: fonts
         } as SatoriOptions)
     }
     private svg_to_rendered(svg: string) {
@@ -184,8 +176,8 @@ export class Inky {
         let image = this.group_array(this.group_array([...buf], 4), this.width)
         this.convertToIndexedColour(image, saturation, dithering)
     }
-    async emulate(path: string, jsx: React.JSX.Element) {
-        let svg = await this.jsx_to_svg(jsx)
+    async emulate(path: string, jsx: React.JSX.Element, fonts: SatoriOptions["fonts"]) {
+        let svg = await this.jsx_to_svg(jsx, fonts)
         let render = this.svg_to_rendered(svg)
         let png = this.rendered_to_png(render)
         writeFileSync(path, png, { flag: "w" })

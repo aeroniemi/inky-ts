@@ -2,10 +2,13 @@
 
 // var PNG = require("pngjs").PNG;
 import { PNG } from "pngjs"
+import { RenderedImage, Resvg } from '@resvg/resvg-js';
 import chalk from 'chalk';
 import { readFileSync } from 'fs'
 
 
+import type { JSX } from "react";
+import satori, { SatoriOptions } from "satori";
 export type Colour = [number, number, number]
 export type Palette = Array<Colour>
 
@@ -156,6 +159,37 @@ export class Inky {
         }
     }
 
+    async set_jsx(content: JSX.Element) {
+        let svg = await this.jsx_to_svg(content)
+        let render = this.svg_to_rendered(svg)
+        let buffer = this.rendered_to_buffered_image(render)
+        this.display_buffered_image(buffer)
+    }
+    private async jsx_to_svg(content: JSX.Element) {
+        return satori(content, {
+            width: this.width,
+            height: this.height,
+            fonts: [
+                {
+                    name: 'SourceSans3',
+                    data: fs.readFileSync("./src/fonts/SourceSans3-SemiBold.ttf"),
+                    weight: 600,
+                    style: "normal",
+                },
+            ],
+
+        } as SatoriOptions)
+    }
+    private svg_to_rendered(svg: string) {
+        let resvg = new Resvg(svg, {})
+        return resvg.render()
+    }
+    private rendered_to_png(render: RenderedImage) {
+        return render.asPng()
+    }
+    private rendered_to_buffered_image(render: RenderedImage) {
+        return render.pixels
+    }
     private display_buffered_image(buf: Buffer, saturation: number = 0.5, dithering: number = 0.75) {
         let image = this.group_array(this.group_array([...buf], 4), this.width)
         this.convertToIndexedColour(image, saturation, dithering)

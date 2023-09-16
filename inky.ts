@@ -1,17 +1,16 @@
-
-
-// var PNG = require("pngjs").PNG;
-import { PNG } from "pngjs"
+// imports
 import { RenderedImage, Resvg } from '@resvg/resvg-js';
 import chalk from 'chalk';
-import { readFileSync } from 'fs'
-
-
+import { readFileSync, writeFileSync } from "fs";
+import { PNG } from "pngjs";
 import type { JSX } from "react";
 import satori, { SatoriOptions } from "satori";
+
+// types
 export type Colour = [number, number, number]
 export type Palette = Array<Colour>
 
+// inky class
 export class Inky {
     width: number;
     height: number;
@@ -25,7 +24,6 @@ export class Inky {
     colour: string;
     lut: string;
     buf: number[][];
-    /* Inky e-Ink Display Driver. */;
     palette: Palette
 
     constructor(width: number, height: number, colour = 'multi') {  // noqa: E501
@@ -97,18 +95,12 @@ export class Inky {
         return this.palette
     }
     public convertToIndexedColour(image: number[][][], saturation: number = 0.5, dithering: number = 0.75) {
-        let palette = this.getPalette(saturation)
-        // let newPalette = palette?.map((colour) => {
-        //     return { "rgb": colour, "lab": this.RGBtoLab(colour) }
-        // })
-        // console.log("converting complete, starting dithering")
-        this.floydSteinbergDither(image, this.width, this.height, palette, dithering);
+        return this.floydSteinbergDither(image, this.width, this.height, this.getPalette(saturation), dithering);
     }
     private RGBtoPalette(rgb: Colour, palette: Palette) {
         return palette.findIndex((ele) => ele === rgb)
     }
     private floydSteinbergDither(image: number[][][], width: number, height: number, palette: Palette, amount: number) {
-        // console.log(width, height)
         let nextRowColourStorage: number[][] = []
 
         for (let i = 0; i < height; i++) {
@@ -153,12 +145,10 @@ export class Inky {
                     }
                 })
                 let i_colour: number = this.RGBtoPalette(closestColour, palette)
-                // console.log(j, i, colour,closestColour, i_colour)
                 this.set_pixel(j, i, i_colour)
             }
         }
     }
-
     async set_jsx(content: JSX.Element) {
         let svg = await this.jsx_to_svg(content)
         let render = this.svg_to_rendered(svg)
@@ -172,7 +162,7 @@ export class Inky {
             fonts: [
                 {
                     name: 'SourceSans3',
-                    data: fs.readFileSync("./src/fonts/SourceSans3-SemiBold.ttf"),
+                    data: readFileSync("./src/fonts/SourceSans3-SemiBold.ttf"),
                     weight: 600,
                     style: "normal",
                 },
@@ -202,6 +192,7 @@ export class Inky {
     }
 }
 
+// error class
 class NotImplementedError extends Error {
     constructor(message = "", ...args: any) {
         super(message, ...args);
@@ -209,6 +200,7 @@ class NotImplementedError extends Error {
     }
 }
 
+//utility function
 function delay(seconds: number) {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }

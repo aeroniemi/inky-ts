@@ -194,6 +194,12 @@ export class Inky {
         let image = this.group_array(this.group_array([...buf], 4), this.width)
         this.convertToIndexedColour(image, saturation, dithering)
     }
+    async emulate(path: string, jsx: React.JSX.Element) {
+        let svg = await this.jsx_to_svg(jsx)
+        let render = this.svg_to_rendered(svg)
+        let png = this.rendered_to_png(render)
+        writeFileSync(path, png, { flag: "w" })
+    }
 }
 
 class NotImplementedError extends Error {

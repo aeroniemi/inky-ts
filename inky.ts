@@ -61,15 +61,11 @@ export class Inky {
     display_png(path: string, saturation = 0.9, dithering = 0.75) {
         var data = readFileSync(path);
         var image = PNG.sync.read(data);
-        let imageArray = this.group_array(this.group_array([...image.data], 4), this.width)
-        this.convertToIndexedColour(imageArray, saturation, dithering)
-
+        this.display_buffered_image(image.data, saturation, dithering)
     }
     display_mem_png(data: any, saturation = 0.9, dithering = 0.75) {
         var image = PNG.sync.read(data);
-        let imageArray = this.group_array(this.group_array([...image.data], 4), this.width)
-        this.convertToIndexedColour(imageArray, saturation, dithering)
-
+        this.display_buffered_image(image.data, saturation, dithering)
     }
     private group_array(array: Array<any>, n: number) {
         return [...Array(Math.ceil(array.length / n))].map((el, i) => array.slice(i * n, (i + 1) * n));
@@ -160,6 +156,10 @@ export class Inky {
         }
     }
 
+    private display_buffered_image(buf: Buffer, saturation: number = 0.5, dithering: number = 0.75) {
+        let image = this.group_array(this.group_array([...buf], 4), this.width)
+        this.convertToIndexedColour(image, saturation, dithering)
+    }
 }
 
 class NotImplementedError extends Error {

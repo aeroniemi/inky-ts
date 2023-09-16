@@ -105,9 +105,6 @@ export class Inky {
         // console.log("converting complete, starting dithering")
         this.floydSteinbergDither(image, this.width, this.height, palette, dithering);
     }
-    private RGBtoLab(rgb: Colour) {
-        return this.XYZtoCIELab(this.RGBtoXYZ(rgb));
-    }
     private RGBtoPalette(rgb: Colour, palette: Palette) {
         return palette.findIndex((ele) => ele === rgb)
     }

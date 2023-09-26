@@ -2,7 +2,7 @@
 import type { ResvgRenderOptions, RenderedImage } from "@resvg/resvg-js"
 let resvg: Function | undefined
 try {
-    resvg  = require('@resvg/resvg-js').renderAsync;
+    resvg = require('@resvg/resvg-js').renderAsync;
 } catch (err) {
     console.trace("ReSVG is not available")
 }
@@ -68,6 +68,10 @@ export class Inky {
         var data = readFileSync(path);
         var image = PNG.sync.read(data);
         this.display_buffered_image(image.data, saturation, dithering)
+    }
+    display_svg(path: string, saturation: number, dithering: number, options = {}) {
+        var data = readFileSync(path).toString("utf8")
+        this.display_mem_svg(data, saturation, dithering, options)
     }
     display_mem_png(data: any, saturation = 0.9, dithering = 0.75) {
         var image = PNG.sync.read(data);
@@ -154,10 +158,10 @@ export class Inky {
             }
         }
     }
-    async display_svg(svg: string, options: ResvgRenderOptions) {
+    async display_mem_svg(svg: string, saturation: number = 0.5, dithering: number = 0.75, options: ResvgRenderOptions = {}) {
         let rendered = await this.svg_to_rendered(svg, options)
         let buff = this.rendered_to_buffered_image(rendered)
-        this.display_buffered_image(buff)
+        this.display_buffered_image(buff, saturation, dithering)
     }
     private async svg_to_rendered(svg: string, options: ResvgRenderOptions) {
         if (resvg === undefined) throw new Error("resvg is required to use the SVG tools - install using 'npm install @resvg/resvg-js")
@@ -169,7 +173,7 @@ export class Inky {
     private rendered_to_buffered_image(render: RenderedImage) {
         return render.pixels
     }
-    private display_buffered_image(buf: Buffer, saturation: number = 0.5, dithering: number = 0.75) {
+    private display_buffered_image(buf: Buffer, saturation: number, dithering: number) {
         let image = this.group_array(this.group_array([...buf], 4), this.width)
         this.convertToIndexedColour(image, saturation, dithering)
     }

@@ -1,13 +1,14 @@
 {
-  "name": "inky",
+  "name": "@aeroniemi/inky",
   "version": "1.0.0",
-  "description": "",
+  "description": "Typescript bindings for Pimoroni's Inky Impression 7.3",
   "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "build:dev": "tsc --watch"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "@aeroniemi",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.6.0",
     "@types/pngjs": "^6.0.1",

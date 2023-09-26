@@ -182,8 +182,8 @@ export class Inky {
 
 // error class
 class NotImplementedError extends Error {
-    constructor(message = "", ...args: any) {
-        super(message, ...args);
+    constructor(message = "") {
+        super(message);
         this.message = message + " has not yet been implemented.";
     }
 }

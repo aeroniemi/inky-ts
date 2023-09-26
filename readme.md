@@ -27,10 +27,10 @@
 ## Example
 ### Display a PNG 
 ```ts
-import { Inky_ac } from "@aeroniemi/inky"
+import { Impression73 } from "@aeroniemi/inky"
 
 async function main() {
-    let screen = new Inky_ac()
+    let screen = new Impression73()
     screen.display_png("./[IMAGE.png]")
     await screen.show()
 }
@@ -42,7 +42,7 @@ main()
 import { Inky_ac } from "@aeroniemi/inky"
 
 async function main() {
-    let screen = new Inky_ac()
+    let screen = new Impression73()
     screen.display_svg("./[IMAGE.svg]")
     await screen.show()
 }

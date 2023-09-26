@@ -1,6 +1,6 @@
 {
   "name": "@aeroniemi/inky",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Typescript bindings for Pimoroni's Inky Impression 7.3",
   "main": "dist/main.js",
   "homepage": "https://github.com/aeroniemi/inky-ts",

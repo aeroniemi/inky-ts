@@ -20,6 +20,7 @@
     -  Run as root user (for access to the SPI device)
 
 ### (Optional) Setup resvg
+- ``npm install --save @resvg/resvg-js``
 - If you're using a Raspberry Pi 3/4/Zero 2W it'll probably "just work", but if you're on a Zero or Zero W you'll need to compile resvg to get it to run properly. See [this issue](https://github.com/yisibl/resvg-js/issues/231) for more details on how.
 
 

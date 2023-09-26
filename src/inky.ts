@@ -1,10 +1,15 @@
 // imports
-import { RenderedImage, Resvg } from '@resvg/resvg-js';
+import type { ResvgRenderOptions, RenderedImage } from "@resvg/resvg-js"
+let resvg: Function | undefined
+try {
+    resvg  = require('@resvg/resvg-js').renderAsync;
+} catch (err) {
+    console.trace("ReSVG is not available")
+}
+
 import chalk from 'chalk';
 import { readFileSync, writeFileSync } from "fs";
 import { PNG } from "pngjs";
-import type { JSX } from "react";
-import satori, {FontOptions, SatoriOptions} from "satori";
 
 // types
 export type Colour = [number, number, number]
@@ -149,22 +154,14 @@ export class Inky {
             }
         }
     }
-    async set_jsx(content: JSX.Element, fonts:SatoriOptions["fonts"]) {
-        let svg = await this.jsx_to_svg(content, fonts)
-        let render = this.svg_to_rendered(svg)
-        let buffer = this.rendered_to_buffered_image(render)
-        this.display_buffered_image(buffer)
+    async display_svg(svg: string, options: ResvgRenderOptions) {
+        let rendered = await this.svg_to_rendered(svg, options)
+        let buff = this.rendered_to_buffered_image(rendered)
+        this.display_buffered_image(buff)
     }
-    private async jsx_to_svg(content: JSX.Element, fonts: SatoriOptions["fonts"]) {
-        return satori(content, {
-            width: this.width,
-            height: this.height,
-            fonts: fonts
-        } as SatoriOptions)
-    }
-    private svg_to_rendered(svg: string) {
-        let resvg = new Resvg(svg, {})
-        return resvg.render()
+    private async svg_to_rendered(svg: string, options: ResvgRenderOptions) {
+        if (resvg === undefined) throw new Error("resvg is required to use the SVG tools - install using 'npm install @resvg/resvg-js")
+        return resvg(svg, options)
     }
     private rendered_to_png(render: RenderedImage) {
         return render.asPng()
@@ -176,9 +173,8 @@ export class Inky {
         let image = this.group_array(this.group_array([...buf], 4), this.width)
         this.convertToIndexedColour(image, saturation, dithering)
     }
-    async emulate(path: string, jsx: React.JSX.Element, fonts: SatoriOptions["fonts"]) {
-        let svg = await this.jsx_to_svg(jsx, fonts)
-        let render = this.svg_to_rendered(svg)
+    async emulate(path: string, svg: string, options: ResvgRenderOptions) {
+        let render = await this.svg_to_rendered(svg, options)
         let png = this.rendered_to_png(render)
         writeFileSync(path, png, { flag: "w" })
     }

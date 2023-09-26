@@ -12,7 +12,7 @@ export declare class Inky_ac extends Inky {
     gpio_setup: boolean;
     DESATURATED_PALETTE: Palette;
     SATURATED_PALETTE: Palette;
-    constructor(width: number, height: number, colour?: string, cs_pin?: number, dc_pin?: number, reset_pin?: number, busy_pin?: number, h_flip?: boolean, v_flip?: boolean);
+    constructor(width?: number, height?: number, colour?: string, cs_pin?: number, dc_pin?: number, reset_pin?: number, busy_pin?: number, h_flip?: boolean, v_flip?: boolean);
     getPalette(saturation: number): Palette;
     private palette_blend;
     setup(): Promise<void>;

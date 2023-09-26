@@ -90,7 +90,7 @@ export class Inky_ac extends Inky {
         [255, 255, 255]   // Clear
     ];
 
-    constructor(width: number, height: number, colour = 'multi', cs_pin = CS0_PIN, dc_pin = DC_PIN, reset_pin = RESET_PIN, busy_pin = BUSY_PIN, h_flip = false, v_flip = true) {  // noqa: E501
+    constructor(width: number = 800, height: number = 480, colour = 'multi', cs_pin = CS0_PIN, dc_pin = DC_PIN, reset_pin = RESET_PIN, busy_pin = BUSY_PIN, h_flip = false, v_flip = true) {  // noqa: E501
         super(width, height, colour)
         if (!['multi'].includes(colour)) {
             throw new Error(`Colour ${colour} is not supported!`);

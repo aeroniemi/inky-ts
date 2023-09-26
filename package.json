@@ -7,6 +7,16 @@
   "files": [
     "dist/*"
   ],
+  "keywords": [
+    "inky",
+    "e-ink",
+    "eink",
+    "e-paper",
+    "epaper",
+    "pimoroni",
+    "inky impression",
+    "raspberry pi"
+  ],
   "repository": "github:aeroniemi/inky-ts",
   "scripts": {
     "build": "tsc",

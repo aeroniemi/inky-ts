@@ -30,14 +30,17 @@ export class Inky {
     lut: string;
     buf: number[][];
     palette: Palette
+    h_flip: boolean;
+    v_flip: boolean;
 
-    constructor(width: number, height: number, colour = 'multi') {  // noqa: E501
-
+    constructor(width: number, height: number, colour = 'multi', h_flip = false, v_flip = false) {  // noqa: E501
         this.width = width
         this.height = height
         this.border_colour = 0;
         this.cols = this.width
         this.rows = this.height
+        this.h_flip = h_flip;
+        this.v_flip = v_flip;
 
         this.colour = colour;
         this.lut = colour;
@@ -185,7 +188,7 @@ export class Inky {
 }
 
 // error class
-class NotImplementedError extends Error {
+export class NotImplementedError extends Error {
     constructor(message = "") {
         super(message);
         this.message = message + " has not yet been implemented.";
@@ -193,6 +196,6 @@ class NotImplementedError extends Error {
 }
 
 //utility function
-function delay(seconds: number) {
+export function delay(seconds: number) {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }

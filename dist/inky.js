@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Inky = void 0;
+exports.delay = exports.NotImplementedError = exports.Inky = void 0;
 let resvg;
 try {
     resvg = require('@resvg/resvg-js').renderAsync;
@@ -25,12 +25,14 @@ const fs_1 = require("fs");
 const pngjs_1 = require("pngjs");
 // inky class
 class Inky {
-    constructor(width, height, colour = 'multi') {
+    constructor(width, height, colour = 'multi', h_flip = false, v_flip = false) {
         this.width = width;
         this.height = height;
         this.border_colour = 0;
         this.cols = this.width;
         this.rows = this.height;
+        this.h_flip = h_flip;
+        this.v_flip = v_flip;
         this.colour = colour;
         this.lut = colour;
         this.palette = [[0, 0, 0], [255, 255, 255]];
@@ -190,7 +192,9 @@ class NotImplementedError extends Error {
         this.message = message + " has not yet been implemented.";
     }
 }
+exports.NotImplementedError = NotImplementedError;
 //utility function
 function delay(seconds) {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
+exports.delay = delay;

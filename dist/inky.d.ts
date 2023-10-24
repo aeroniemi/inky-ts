@@ -15,7 +15,9 @@ export declare class Inky {
     lut: string;
     buf: number[][];
     palette: Palette;
-    constructor(width: number, height: number, colour?: string);
+    h_flip: boolean;
+    v_flip: boolean;
+    constructor(width: number, height: number, colour?: string, h_flip?: boolean, v_flip?: boolean);
     log_buffer(): void;
     setup(): Promise<void>;
     set_pixel(x: number, y: number, colour_index: number): void;
@@ -38,3 +40,7 @@ export declare class Inky {
     private display_buffered_image;
     emulate(path: string, svg: string, options: ResvgRenderOptions): Promise<void>;
 }
+export declare class NotImplementedError extends Error {
+    constructor(message?: string);
+}
+export declare function delay(seconds: number): Promise<unknown>;

@@ -50,10 +50,10 @@ main()
 ```
 
 ### Display a PNG with Node.js and Javascript
-```
+```js
 const epaper = require('@aeroniemi/inky');
 
-async function main() {    
+async function main() {
     let screen = new epaper.Impression57();
     screen.display_png("./[IMAGE.png]");
 
@@ -62,12 +62,12 @@ async function main() {
     let h = 100;
     let sx = 100;
     let sy = 100;
-    for(let x =0;x<w;x++){
-        for(let y=0;y<h;y++){
-            screen.set_pixel(x+sx,y+sy,1);
+    for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) {
+            screen.set_pixel(x + sx, y + sy, 1);
         }
-    }    
-    await screen.show();    
+    }
+    await screen.show();
 }
 main();
 ```

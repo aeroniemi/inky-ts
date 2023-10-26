@@ -5,7 +5,7 @@
 - Support for:
     - [Inky Impression 7.3](https://shop.pimoroni.com/products/inky-impression-7-3)
     - [Inky Impression 5.7](https://shop.pimoroni.com/products/inky-impression-5-7)
-    - [Inky Impression 4.0] (https://shop.pimoroni.com/products/inky-impression-4)
+    - [Inky Impression 4.0](https://shop.pimoroni.com/products/inky-impression-4)
 - Individual pixel interaction
 - Setting images in:
     - PNG

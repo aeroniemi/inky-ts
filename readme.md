@@ -1,5 +1,5 @@
 # inky
-> A typescript package to interact with Pimoroni's Inky Impression series of displays. Implemenents a subset of the features of [@pimoroni/inky](https://github.com/pimoroni/inky)
+> A typescript package to interact with Pimoroni's Inky Impression series of displays. Implements a subset of the features of [@pimoroni/inky](https://github.com/pimoroni/inky)
 
 ## Features
 - Support for:

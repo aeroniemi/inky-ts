@@ -78,7 +78,7 @@ class Inky_uc extends Inky_Colour {
             })
             rpio.spiBegin();
             rpio.spiChipSelect(0);
-            rpio.spiSetClockDivider(250000000 / 3000000); // 25MHz
+            rpio.spiSetClockDivider(84); // 25MHz
 
             rpio.open(this.cs_pin, rpio.OUTPUT)
             rpio.open(this.dc_pin, rpio.OUTPUT, rpio.PULL_OFF)
@@ -122,7 +122,7 @@ class Inky_uc extends Inky_Colour {
         this.send_command(
             UC8159_PSR,
             [
-                (this.resolution_setting << 6) | 0b101111,  // See above for more magic numbers
+                (this.resolution_setting << 6) | 0b11101111,  // See above for more magic numbers
                 0x08                                        // display_colours == UC8159_7C
             ]
         )

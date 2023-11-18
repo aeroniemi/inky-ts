@@ -42,7 +42,7 @@ main()
 
 ### Display a SVG
 ```ts
-import { Inky_ac } from "@aeroniemi/inky"
+import { Impression73 } from "@aeroniemi/inky"
 
 async function main() {
     let screen = new Impression73()
